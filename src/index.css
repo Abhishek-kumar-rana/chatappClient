@@ -9,3 +9,13 @@
 .scrollbar::-webkit-scrollbar-thumb{
   @apply bg-slate-200/50 rounded-full
 }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}   

@@ -411,7 +411,7 @@ const MessagePage = () => {
       </header>
 
       {/* Chat area */}
-      <section className="relative h-[calc(100vh-160px)] overflow-y-auto py-4 px-4 mb-2 scrollbar scrollbar-thin scrollbar-thumb-[#4d3d2b] scrollbar-track-transparent">
+      <section className="relative h-[calc(100vh-160px)] overflow-y-auto py-4 px-1 mb-2 scrollbar no-scrollbar scrollbar-thin scrollbar-thumb-[#4d3d2b] scrollbar-track-transparent">
         <div className="max-w-5xl mx-auto flex flex-col gap-3">
           {allMessage?.length === 0 && (
             <div className="mt-24 text-center text-[#d6b985] opacity-80">
@@ -443,7 +443,7 @@ const MessagePage = () => {
               >
                 <div className="relative group max-w-[80%] sm:max-w-[70%] md:max-w-[60%]">
                   <div
-                    className={`rounded-2xl px-4 py-3 shadow-lg transition-transform transform ${
+                    className={`rounded-2xl px-2 py-3 shadow-lg transition-transform transform ${
                       mine
                         ? "bg-gradient-to-br from-[#f1d7a8] via-[#d4af37] to-[#b8860b] text-black"
                         : "bg-gradient-to-br from-[#141414] via-[#1f1f1f] to-[#050505] text-[#ffecc7]"
@@ -674,7 +674,7 @@ const MessagePage = () => {
             <div className="relative">
               <button
                 onClick={handleUploadImageVideoOpen}
-                className="w-12 h-12 rounded-full bg-black border border-[#d4af37] flex items-center justify-center shadow-inner hover:scale-105 transition"
+                className="w-10 h-10 rounded-full bg-black border border-[#d4af37] flex items-center justify-center shadow-inner hover:scale-105 transition"
                 title="Attach"
               >
                 <FaPlus className="text-[#f1d7a8]" size={18} />
@@ -714,34 +714,33 @@ const MessagePage = () => {
             {/* input + emoji & send */}
             <form
               onSubmit={handleSendMessage}
-              className="flex-1 flex items-center gap-3"
+              className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3"
             >
-              <div className="flex-1 flex items-center gap-2 rounded-full bg-black/80 border border-[#4a4a4a] px-3 py-1 shadow-inner focus-within:border-[#d4af37]">
+              <div className="flex-1 min-w-0 flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/80 border border-[#4a4a4a] px-2.5 sm:px-3 py-1 shadow-inner focus-within:border-[#d4af37]">
                 <input
                   type="text"
                   placeholder="Type your legend..."
                   value={message.text}
                   onChange={handleOnChange}
-                  className="flex-1 py-2 px-1 bg-transparent text-[#f6e7c2] outline-none placeholder:text-[#a88b4b]"
+                  className="w-full py-1.5 sm:py-2 px-0.5 bg-transparent text-xs sm:text-sm text-[#f6e7c2] outline-none placeholder:text-[#a88b4b]"
                 />
 
-                {/* Emoji button */}
                 <button
                   type="button"
-                  className="emoji-toggle-btn w-10 hidden h-10 md:flex items-center justify-center rounded-full hover:bg-white/5 transition"
+                  className="emoji-toggle-btn w-8 h-8 hidden md:flex items-center justify-center rounded-full hover:bg-white/5 transition flex-shrink-0"
                   title="Emoji"
                   onClick={() => setShowEmojiPicker((p) => !p)}
                 >
-                  <IoHappyOutline className="text-[#f1d7a8]" size={22} />
+                  <IoHappyOutline className="text-[#f1d7a8]" size={20} />
                 </button>
               </div>
 
               <button
                 type="submit"
                 title="Send"
-                className="w-14 h-14 rounded-full bg-gradient-to-br from-[#f1d7a8] via-[#d4af37] to-[#b8860b] flex items-center justify-center text-black shadow-[0_8px_18px_rgba(212,175,55,0.4)] transform hover:-translate-y-0.5 active:translate-y-0.5 transition"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#f1d7a8] via-[#d4af37] to-[#b8860b] flex items-center justify-center text-black shadow-[0_6px_14px_rgba(212,175,55,0.4)] transform hover:-translate-y-0.5 active:translate-y-0.5 transition flex-shrink-0"
               >
-                <IoMdSend size={32} className="-rotate-30" />
+                <IoMdSend size={22} className="-rotate-30" />
               </button>
             </form>
           </div>
