@@ -143,9 +143,7 @@ const Sidebar = () => {
               <Avatar
                 imageUrl={conv?.userDetails?.profile_pic}
                 name={
-                    user?._id === conv?.userDetails?._id
-                        ? `${conv?.userDetails?.name} (You)`
-                        : conv?.userDetails?.name
+                    conv?.userDetails?.name
                     }
                 width={45}
                 height={45}

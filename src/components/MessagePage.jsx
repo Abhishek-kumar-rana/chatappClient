@@ -45,6 +45,10 @@ const MessagePage = () => {
 
   const currentMessage = useRef(null);
 
+  const [isTyping, setIsTyping] = useState(false);
+const typingTimeoutRef = useRef(null);
+
+
   // Common reaction emojis (WhatsApp style)
   const quickReactions = ["❤️", "😂", "😮", "😢", "🙏", "👍"];
 
@@ -129,6 +133,24 @@ const MessagePage = () => {
       );
     };
 
+       const handleTyping = (data) => {
+  // Show typing ONLY if typing user is the one you are chatting with
+  if (data.sender === params.userId) {
+    setIsTyping(true);
+  }
+};
+
+const handleStopTyping = (data) => {
+  if (data.sender === params.userId) {
+    setIsTyping(false);
+  }
+};
+
+
+    socketConnection.on("typing", handleTyping);
+    socketConnection.on("stop-typing", handleStopTyping);
+
+
     // emit after listeners set
     socketConnection.emit("message-page", params.userId);
     socketConnection.emit("seen", params.userId);
@@ -143,13 +165,35 @@ const MessagePage = () => {
       socketConnection.off("message", handleMessage);
       socketConnection.off("message-deleted", handleMessageDeleted);
       socketConnection.off("reaction-update", handleReactionUpdate);
+      socketConnection.off("typing", handleTyping);
+      socketConnection.off("stop-typing", handleStopTyping);
+
     };
   }, [socketConnection, params?.userId]);
 
   const handleOnChange = (e) => {
-    const { value } = e.target;
-    setMessage((p) => ({ ...p, text: value }));
-  };
+  const { value } = e.target;
+  setMessage((p) => ({ ...p, text: value }));
+
+  if (!socketConnection) return;
+
+  socketConnection.emit("typing", {
+    sender: user?._id,
+    receiver: params.userId,
+  });
+
+  // Clear old timeout
+  if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+  // Stop typing after 1.2 sec of no typing
+  typingTimeoutRef.current = setTimeout(() => {
+    socketConnection.emit("stop-typing", {
+      sender: user?._id,
+      receiver: params.userId,
+    });
+  }, 2000);
+};
+
 
   const handleEmojiClick = (emojiData) => {
     setMessage((prev) => ({
@@ -160,6 +204,7 @@ const MessagePage = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
+    
     if (message.text || message.imageUrl || message.videoUrl) {
       if (socketConnection) {
         socketConnection.emit("new message", {
@@ -299,7 +344,8 @@ const MessagePage = () => {
                   width={45}
                   height={45}
                   imageUrl={dataUser?.profile_pic}
-                  name={dataUser?.name}
+                  name={dataUser?.name
+                    }
                   userId={dataUser?._id}
                 />
               </div>
@@ -307,7 +353,9 @@ const MessagePage = () => {
 
             <div>
               <h3 className="font-extrabold text-lg text-[#fce8a9] tracking-widest drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] uppercase">
-                {dataUser?.name || "—"}
+                {user?._id === dataUser?._id
+                        ? `${dataUser?.name} (You)`
+                        : dataUser?.name || "—"}
               </h3>
               <p className="text-xs mt-0.5">
                 {dataUser?.online ? (
@@ -388,7 +436,9 @@ const MessagePage = () => {
 
           <div>
             <h3 className="font-extrabold text-lg text-[#fce8a9] tracking-widest drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] uppercase">
-              {dataUser?.name || "—"}
+              {(user?._id === dataUser?._id
+                        ? `${dataUser?.name} (You)`
+                        : dataUser?.name )|| "—"}
             </h3>
             <p className="text-xs mt-0.5">
               {dataUser?.online ? (
@@ -443,7 +493,7 @@ const MessagePage = () => {
               >
                 <div className="relative group max-w-[80%] sm:max-w-[70%] md:max-w-[60%]">
                   <div
-                    className={`rounded-2xl px-2 py-3 shadow-lg transition-transform transform ${
+                    className={`rounded-2xl px-4 py-1 shadow-lg transition-transform transform ${
                       mine
                         ? "bg-gradient-to-br from-[#f1d7a8] via-[#d4af37] to-[#b8860b] text-black"
                         : "bg-gradient-to-br from-[#141414] via-[#1f1f1f] to-[#050505] text-[#ffecc7]"
@@ -607,6 +657,7 @@ const MessagePage = () => {
               </div>
             );
           })}
+       
         </div>
 
         {/* Image preview */}
@@ -654,9 +705,29 @@ const MessagePage = () => {
         )}
       </section>
 
+
+
+        {/* ///////////// */}
+          {/* typing indicator */}
+
+          
+
+
       {/* Composer */}
       <section className="sticky bottom-0 z-40 px-4 pb-4 bg-transparent">
         <div className="max-w-5xl mx-auto relative">
+        {isTyping && (
+  <div className="absolute bottom-[30px] sm:bottom-[40px] left-0 w-full flex items-center justify-start gap-2 px-4 py-2 pointer-events-none z-40">
+    <div className="flex items-center gap-2  bg-transparent    px-3 py-1 animate-pulse">
+      <div className="w-2 h-2 bg-[#d4af37] rounded-full"></div>
+      <div className="w-2 h-2 bg-[#d4af37] rounded-full"></div>
+      <div className="w-2 h-2 bg-[#d4af37] rounded-full"></div>
+      <span className="text-xs text-[#f1d7a8] opacity-80">typing...</span>
+    </div>
+  </div>
+)}
+
+
           {/* Emoji picker dropdown */}
           {showEmojiPicker && (
             <div className="emoji-picker-container absolute bottom-20 right-20 bg-[#050505] border border-[#d4af37]/60 rounded-2xl shadow-2xl p-1 z-50">
@@ -670,8 +741,10 @@ const MessagePage = () => {
           )}
 
           <div className="flex items-center gap-3">
+            
             {/* left controls */}
             <div className="relative">
+              
               <button
                 onClick={handleUploadImageVideoOpen}
                 className="w-10 h-10 rounded-full bg-black border border-[#d4af37] flex items-center justify-center shadow-inner hover:scale-105 transition"
@@ -717,6 +790,7 @@ const MessagePage = () => {
               className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3"
             >
               <div className="flex-1 min-w-0 flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/80 border border-[#4a4a4a] px-2.5 sm:px-3 py-1 shadow-inner focus-within:border-[#d4af37]">
+              
                 <input
                   type="text"
                   placeholder="Type your legend..."
